@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.cart.models import Cart, CartItem
-from apps.cart.serializers import AddCartItemSerializer, CartSerializer
+from apps.cart.serializers import AddCartItemSerializer, CartSerializer, UpdateCartItemSerializer
 
 class CartView(APIView):
     def get(self, request):
@@ -41,14 +41,16 @@ class CartItemDetailView(APIView):
         # Scoped to the logged-in user's own cart — someone else's
         # cart item ID simply doesn't exist from this user's perspective,
         # rather than existing-but-forbidden. Avoids leaking existence.
-        return get_object_or_404(CartItem, id=item_id, cart_user=request.user)
+        return get_object_or_404(CartItem, id=item_id, cart__user=request.user)
 
     def patch(self, request, item_id):
         item = self.get_item(request, item_id)
-        quantity = request.data.get('quantity')
-        if quantity is None or int(quantity) < 1:
-            return Response({'quantity': 'Must be a positive integer.'}, status=status.HTTP_400_BAD_REQUEST)
-        if int(quantity) > item.product.stock_quantity:
+
+        serializer = UpdateCartItemSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        quantity = serializer.validated_data['quantity']
+        
+        if quantity > item.product.stock_quantity:
             return Response(
                 {'quantity': f'Only {item.product.stock_quantity} in stock.'},
                 status=status.HTTP_400_BAD_REQUEST,

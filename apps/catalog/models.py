@@ -10,13 +10,13 @@ class Product(models.Model):
     merchant = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='products'
     ) #Explanation needed
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200) #is there not suppose to be an uniqueness here? I created two products in different places on postman.
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(default='NGN')
+    currency = models.CharField(max_length=3, default='NGN')
     stock_quantity = models.PositiveIntegerField(default=0)
     sku = models.CharField(max_length=64, unique=True)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active') #why not inactive everytime our stock is at 0
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
