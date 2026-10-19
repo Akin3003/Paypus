@@ -144,6 +144,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -171,9 +174,24 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME' : timedelta(minutes=15),
+    'ACCESS_TOKEN_LIFETIME' : timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME' : timedelta(days=7),
     'ROTATE_REFRESH_TOKENS' : True, #For new acees token
     'BLACKLIST_AFTER_ROTATION' : True,
     'AUTH_HEADER_TYPES' : ('Bearer'), #purpose of the bracket
+}
+
+PAYSTACK_SECRET_KEY = os.getenv('PAYSTACK_SECRET_KEY')
+PAYSTACK_PUBLIC_KEY = os.getenv('PAYSTACK_PUBLIC_KEY')
+CALLBACK_URL = os.getenv('CALLBACK_URL')
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = REDIS_URL
+CELERY_TIMEZONE = "UTC"
+
+CELERY_BEAT_SCHEDULE = {
+    "cancel-expired-orders": {
+        "task": "apps.orders.tasks.cancel_expired_orders",
+        "schedule": 60.0,  # every minute
+    },
 }
